@@ -661,7 +661,8 @@ def pool_info(pool_=None):
         return {'state': VIRT_POOL_STATE_NAME_MAP.get(raw[0], 'unknown'),
                 'size': raw[1],
                 'used': raw[2],
-                'free': raw[3]}
+                'free': raw[3],
+                'capacity': '{0:.0f}%'.format(float(raw[2])/raw[1]*100)}
     info = {}
     if pool_:
         info[pool_] = _info(pool_)
