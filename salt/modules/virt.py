@@ -658,11 +658,21 @@ def pool_info(pool_=None):
     def _info(pool_):
         pool = _get_pool(pool_)
         raw = pool.info()
+        doc = minidom.parse(_StringIO(pool.XMLDesc(0)))
+        pool_type = doc.documentElement.getAttribute('type')
+        if not pool_type:
+            pool_type = 'unknown'
+        try:
+            target = doc.getElementsByTagName('target')[0].getElementsByTagName('path')[0].firstChild.nodeValue
+        except IndexError:
+            target = 'unknown'
         return {'state': VIRT_POOL_STATE_NAME_MAP.get(raw[0], 'unknown'),
                 'size': raw[1],
                 'used': raw[2],
                 'free': raw[3],
-                'capacity': '{0:.0f}%'.format(float(raw[2])/raw[1]*100)}
+                'capacity': '{0:.0f}%'.format(float(raw[2])/raw[1]*100),
+                'type': pool_type,
+                'target': target}
     info = {}
     if pool_:
         info[pool_] = _info(pool_)
