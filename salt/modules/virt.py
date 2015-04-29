@@ -166,6 +166,16 @@ def _get_dom(vm_):
     return conn.lookupByName(vm_)
 
 
+def _get_pool(pool_):
+    '''
+    Return a storage pool object for the namd pool
+    '''
+    conn = __get_conn()
+    if pool_ not in list_pools():
+        raise CommandExecutionError('The specified pool is not present')
+    return conn.storagePoolLookupByName(pool_)
+
+
 def _libvirt_creds():
     '''
     Returns the user and group that the disk images should be owned by
@@ -632,6 +642,23 @@ def list_pools():
     conn = __get_conn()
     pools = [ pool_.name() for pool_ in conn.listAllStoragePools()]
     return pools
+
+
+def pool_info(pool_=None):
+    '''
+    Return detailed information about the storage pools on 
+    this hypervisor in a list of dicts
+    '''
+    def _info(pool_):
+        pool = _get_pool(pool_)
+        return dict(zip(['state', 'size', 'used', 'free'], pool.info()))
+    info = {}
+    if pool_:
+        info[pool_] = _info(pool_)
+    else:
+        for pool_ in list_pools():
+            info[pool_] = _info(pool_)
+    return info
 
 
 def list_vms():
