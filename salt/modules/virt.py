@@ -55,6 +55,12 @@ VIRT_STATE_NAME_MAP = {0: 'running',
                        5: 'shutdown',
                        6: 'crashed'}
 
+VIRT_POOL_STATE_NAME_MAP = {0: 'inactive',
+                            1: 'building',
+                            2: 'running',
+                            3: 'degraded',
+                            4: 'inaccessible'}
+
 VIRT_DEFAULT_HYPER = 'kvm'
 
 
@@ -651,7 +657,11 @@ def pool_info(pool_=None):
     '''
     def _info(pool_):
         pool = _get_pool(pool_)
-        return dict(zip(['state', 'size', 'used', 'free'], pool.info()))
+        raw = pool.info()
+        return {'state': VIRT_POOL_STATE_NAME_MAP.get(raw[0], 'unknown'),
+                'size': raw[1],
+                'used': raw[2],
+                'free': raw[3]}
     info = {}
     if pool_:
         info[pool_] = _info(pool_)
