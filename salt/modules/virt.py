@@ -625,6 +625,15 @@ def init(name,
     return True
 
 
+def list_pools():
+    '''
+    Return a list of storage pools on the minion
+    '''
+    conn = __get_conn()
+    pools = [ pool_.name() for pool_ in conn.listAllStoragePools()]
+    return pools
+
+
 def list_vms():
     '''
     Return a list of virtual machine names on the minion
