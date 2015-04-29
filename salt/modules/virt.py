@@ -684,12 +684,12 @@ def pool_info(pool_=None):
 
 def list_volumes(pool_=None):
     '''
-    Return a list of storage volumes
+    Return a list of storage volumes in a pool, or a dict of
+    all pools and their volumes
     '''
     vols = {}
     if pool_:
-        pool = _get_pool(pool_)
-        vols[pool_] = pool.listVolumes()
+        vols = _get_pool(pool_).listVolumes()
     else:
         for pool_ in list_pools():
             vols[pool_] = _get_pool(pool_).listVolumes()
