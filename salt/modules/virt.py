@@ -672,6 +672,20 @@ def pool_info(pool_=None):
     return info
 
 
+def list_volumes(pool_=None):
+    '''
+    Return a list of storage volumes
+    '''
+    vols = {}
+    if pool_:
+        pool = _get_pool(pool_)
+        vols[pool_] = pool.listVolumes()
+    else:
+        for pool_ in list_pools():
+            vols[pool_] = _get_pool(pool_).listVolumes()
+    return vols
+
+
 def list_vms():
     '''
     Return a list of virtual machine names on the minion
