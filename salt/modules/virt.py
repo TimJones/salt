@@ -61,6 +61,12 @@ VIRT_POOL_STATE_NAME_MAP = {0: 'inactive',
                             3: 'degraded',
                             4: 'inaccessible'}
 
+VIRT_VOL_TYPE_NAME_MAP = {0: 'file',
+                          1: 'block',
+                          2: 'dir',
+                          3: 'network',
+                          4: 'netdir'}
+
 VIRT_DEFAULT_HYPER = 'kvm'
 
 
@@ -180,6 +186,18 @@ def _get_pool(pool_):
     if pool_ not in list_pools():
         raise CommandExecutionError('The specified pool is not present')
     return conn.storagePoolLookupByName(pool_)
+
+
+def _get_vol(pool_, vol_):
+    '''
+    Return a storage volume object for the named volume
+    in the specified pool
+    '''
+    conn = __get_conn()
+    pool = _get_pool(pool_)
+    if vol_ not in list_volumes(pool_):
+        raise CommandExecutionError('The specificed volume does not exist in the pool')
+    return pool.storageVolLookupByName(vol_)
 
 
 def _libvirt_creds():
@@ -693,6 +711,26 @@ def list_volumes(pool_=None):
     else:
         for pool_ in list_pools():
             vols[pool_] = _get_pool(pool_).listVolumes()
+    return vols
+
+
+def volume_info(vol_=None):
+    '''
+    Return detailed information on the storage volumes on this
+    hypervisor as a list of dicts
+    '''
+    def _info(pool_, vol_):
+        vol = _get_vol(pool_, vol_)
+        raw = vol.info()
+        return {'pool': pool_,
+                'type': VIRT_VOL_TYPE_NAME_MAP.get(raw[0], 'unknown'),
+                'capacity': raw[1],
+                'allocation': raw[2]}
+    vols = {}
+    for pool in list_pools():
+        for vol in list_volumes(pool):
+            if not vol_ or vol_ == vol:
+                vols[pool] = {vol: _info(pool, vol)}
     return vols
 
 
