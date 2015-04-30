@@ -25,6 +25,7 @@ from xml.dom import minidom
 import salt.ext.six as six
 from salt.ext.six.moves import StringIO as _StringIO  # pylint: disable=import-error
 from xml.dom import minidom
+from collections import defaultdict
 try:
     import libvirt  # pylint: disable=import-error
     HAS_LIBVIRT = True
@@ -726,11 +727,11 @@ def volume_info(vol_=None):
                 'type': VIRT_VOL_TYPE_NAME_MAP.get(raw[0], 'unknown'),
                 'capacity': raw[1],
                 'allocation': raw[2]}
-    vols = {}
+    vols = defaultdict(dict)
     for pool in list_pools():
         for vol in list_volumes(pool):
             if not vol_ or vol_ == vol:
-                vols[pool] = {vol: _info(pool, vol)}
+                vols[pool][vol] = _info(pool, vol)
     return vols
 
 
