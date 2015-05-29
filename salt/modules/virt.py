@@ -723,10 +723,21 @@ def volume_info(vol_=None):
     def _info(pool_, vol_):
         vol = _get_vol(pool_, vol_)
         raw = vol.info()
-        return {'pool': pool_,
-                'type': VIRT_VOL_TYPE_NAME_MAP.get(raw[0], 'unknown'),
+        doc = minidom.parse(_StringIO(vol.XMLDesc(0)))
+        info = {'type': VIRT_VOL_TYPE_NAME_MAP.get(raw[0], 'unknown'),
                 'capacity': raw[1],
                 'allocation': raw[2]}
+        try:
+            target = doc.getElementsByTagName('target')[0]
+            info['target'] = target.getElementsByTagName('path')[0].firstChild.nodeValue
+        except IndexError:
+            info['target'] = 'unknown'
+        if info['type'] == 'file':
+            try:
+                info['format'] = target.getElementsByTagName('format')[0].getAttribute('type')
+            except IndexError:
+                info['format'] = 'unknown'
+        return info
     vols = defaultdict(dict)
     for pool in list_pools():
         for vol in list_volumes(pool):
